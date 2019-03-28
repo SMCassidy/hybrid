@@ -4,6 +4,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList;
 import hybrid.TaskFleet;
 import org.json.*;
 
@@ -45,16 +47,32 @@ public class Task {
 	  }
 	  
 	  public void buildMessage() {
-
+		  
 		  obj = new JSONObject();
 		  obj.put("id", TaskFleet.stampID());
 		  obj.put("type", this.type);
-		  obj.put("resources", "");
+		 // obj.put("resources", "");
 		  obj.put("rescheduled_amount", 0);	  
 		  JSONArray r = new JSONArray();
-		  obj.put("resources",r);
 		  obj.put("workers_rescheduled", r);
 		  obj.put("result", r);
+		  
+		  //Generate task resource requirements 
+		  //Randomly select between 0-3 of 10 resources r1 to r10
+		  //Assign it to task resource JSON array
+		  ArrayList<Integer> copy = new ArrayList<Integer>();
+		  int k = ThreadLocalRandom.current().nextInt(0, 3 + 1);
+		  for(int i=0;i<k;i++) {
+			  Integer l = ThreadLocalRandom.current().nextInt(1,11);
+			  //Check we're not adding the same resource twice
+			  if(!copy.contains(l)) {
+			  r.put("r".concat(l.toString()));
+			  }
+			  copy.add(l);
+		  }
+		  
+		  obj.put("resources",r);
+
 	  }
 	  
 	  public void setMessage(String s) {

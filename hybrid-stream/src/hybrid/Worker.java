@@ -36,16 +36,33 @@ public class Worker {
 
 	    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 	        String message = new String(delivery.getBody(), "UTF-8");
-
 	        System.out.println(id +"- [x] Received '" + message + "'");
 	        
-	        //decide(message)
-	  
-	       	//Deserialize JSON
+	        //Deserialize JSON
 	    	jo = new JSONObject(message);
 	        
-	        if (decide()) {	//Accept Task
+	        if (decide()) {	
+	        	//Accept Task
 		        try {
+//		        	System.out.println("RES:" + jo.get("resources"));
+
+		        	//Current problem
+		        	//Need to handle case where there is no resources
+		        	try {
+		        	JSONArray r = new JSONArray(jo.get("resources"));
+		        	
+
+		        	for (int i = 0; i < r.length(); i++) {
+		        		  resources.add(r.getJSONObject(i).toString());
+		        		  System.out.println("RE:" + r.getJSONObject(i).toString());
+		        		}
+		        	
+		        	System.out.println("RES:" + resources.toString());
+		        	}
+		        	catch(JSONException e) {
+		        		
+		        	}
+		        	
 		            doWork(message);
 		        } finally {
 		            System.out.println(id + "- [x] Done");
@@ -53,8 +70,9 @@ public class Worker {
 		            WorkFleet.incTotal();
 		        }
 	        }
-	        else {					//Reschedule Task
+	        else {					
 	        	
+	        	//Reschedule Task
 	        	
 	        	//Add Task ID to tasks_seen array
 	        	tasks_seen.add(jo.get("id").toString());
@@ -85,6 +103,7 @@ public class Worker {
 		  //Acquire resources task requires
 		  //Incur sleep for each resource to acquire
 		  //Sleep depending on task type
+		  
 		  
 	    for (char ch : task.toCharArray()) {
 	        if (ch == '.') {
