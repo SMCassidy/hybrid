@@ -13,12 +13,15 @@ public class Worker {
 
 	  private static final String TASK_QUEUE_NAME = "task_queue";
 	  private int id;
+	  private int worked;
 	  private ArrayList<String> resources;
 	  private ArrayList<String> tasks_seen;
+	  String message;
 	  JSONObject jo;
 	  
 	  public Worker(int id) {
 		  this.id = id;
+		  this.worked = 0;
 		  tasks_seen = new ArrayList<String>();
 		  resources = new ArrayList<String>();
 	  }
@@ -35,7 +38,7 @@ public class Worker {
 	    channel.basicQos(1);
 
 	    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-	        String message = new String(delivery.getBody(), "UTF-8");
+	        message = new String(delivery.getBody(), "UTF-8");
 	        System.out.println(id +"- [x] Received '" + message + "'");
 	        
 	        //Deserialize JSON
@@ -44,25 +47,23 @@ public class Worker {
 	        if (decide()) {	
 	        	//Accept Task
 		        try {
-//		        	System.out.println("RES:" + jo.get("resources"));
 
-		        	//Current problem
-		        	//Need to handle case where there is no resources
-		        	try {
-		        	JSONArray r = new JSONArray(jo.get("resources"));
+		        	//Acquire Resources
 		        	
-
-		        	for (int i = 0; i < r.length(); i++) {
-		        		  resources.add(r.getJSONObject(i).toString());
-		        		  System.out.println("RE:" + r.getJSONObject(i).toString());
+		        	JSONObject r = new JSONObject();
+		        	r.put("res", jo.get("resources"));
+		        	String RString = new String(r.get("res").toString());
+		        	for (String s : RString.split("\"")) {
+		        		if(s.charAt(0) == 'r') {
+		        			if(!resources.contains(s)) {
+		        					resources.add(s);
+		        			}
 		        		}
-		        	
-		        	System.out.println("RES:" + resources.toString());
 		        	}
-		        	catch(JSONException e) {
-		        		
-		        	}
-		        	
+		      //  	System.out.println(r.get("res").toString());
+		     //		System.out.println("RES:" + resources.toString());
+
+		        	this.worked++;
 		            doWork(message);
 		        } finally {
 		            System.out.println(id + "- [x] Done");
@@ -105,7 +106,7 @@ public class Worker {
 		  //Sleep depending on task type
 		  
 		  
-	    for (char ch : task.toCharArray()) {
+	/*    for (char ch : task.toCharArray()) {
 	        if (ch == '.') {
 	            try {
 	                Thread.sleep(1000);
@@ -114,6 +115,11 @@ public class Worker {
 	            }
 	        }
 	    }
+	    */
+	  }
+	  
+	  public String toString() {
+		  return "ID: " + this.id + " Worked: " + this.worked + " R: " + this.resources.toString();
 	  }
 	  
 	  private boolean decide(){
@@ -124,6 +130,22 @@ public class Worker {
 			  //If we have seen Task before, accept it
 			  return true;
 		  }
+
+		  try {
+	        	JSONArray re = new JSONArray(jo.get("resources"));
+
+	        	for (int i = 0; i < re.length(); i++) {
+	        		//If Task requires any resources already acquired, accept it
+	        		  if (resources.contains(re.getJSONObject(i).toString())) {
+	        			  return true;
+	        		  }
+	        		}
+	        	
+	        	}
+	        	catch(JSONException e) {
+	        		
+	        	}
+
 
 		  return false;
 	  }

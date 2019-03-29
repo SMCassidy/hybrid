@@ -53,9 +53,11 @@ public class Task {
 		  obj.put("type", this.type);
 		 // obj.put("resources", "");
 		  obj.put("rescheduled_amount", 0);	  
-		  JSONArray r = new JSONArray();
-		  obj.put("workers_rescheduled", r);
-		  obj.put("result", r);
+		  JSONArray result = new JSONArray();
+		  JSONArray w_r = new JSONArray();
+		  JSONArray res = new JSONArray();
+		  obj.put("workers_rescheduled", w_r);
+		  obj.put("result", result);
 		  
 		  //Generate task resource requirements 
 		  //Randomly select between 0-3 of 10 resources r1 to r10
@@ -66,12 +68,12 @@ public class Task {
 			  Integer l = ThreadLocalRandom.current().nextInt(1,11);
 			  //Check we're not adding the same resource twice
 			  if(!copy.contains(l)) {
-			  r.put("r".concat(l.toString()));
+			  res.put("r".concat(l.toString()));
 			  }
 			  copy.add(l);
 		  }
 		  
-		  obj.put("resources",r);
+		  obj.put("resources",res);
 
 	  }
 	  
