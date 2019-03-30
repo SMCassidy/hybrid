@@ -12,18 +12,24 @@ import org.json.*;
 public class Worker {
 
 	  private static final String TASK_QUEUE_NAME = "task_queue";
-	  private int id;
-	  private int worked;
-	  private ArrayList<String> resources;
-	  private ArrayList<String> tasks_seen;
+	  private char policy; 							//'b' baseline; 'r' resource; 'p' preference
+	  private int id;								//Worker ID
+	  private int worked;							//Number of tasks processed
+	  private ArrayList<String> resources;			//Array of resources
+	  private ArrayList<String> tasks_rejected; 	//Array of Task IDs
+	  private ArrayList<String> tasks_accepted;	//Array of Task Types
+	  private JSONObject jo;						//JSON Buffer for incoming task
+	  private JSONObject r;							//JSON Buffer for resource array
 	  String message;
-	  JSONObject jo;
 	  
-	  public Worker(int id) {
+	  public Worker(int id, char policy) {
 		  this.id = id;
-		  this.worked = 0;
-		  tasks_seen = new ArrayList<String>();
+		  this.policy = policy;
+		  worked = 0;
+		  tasks_rejected = new ArrayList<String>();
 		  resources = new ArrayList<String>();
+		  jo = new JSONObject();
+		  r = new JSONObject();
 	  }
 
 	  public void listen() throws Exception {
@@ -48,26 +54,21 @@ public class Worker {
 	        	//Accept Task
 		        try {
 
-		        	//Acquire Resources
-		        	
-		        	JSONObject r = new JSONObject();
-		        	r.put("res", jo.get("resources"));
-		        	String RString = new String(r.get("res").toString());
-		        	for (String s : RString.split("\"")) {
-		        		if(s.charAt(0) == 'r') {
-		        			if(!resources.contains(s)) {
-		        					resources.add(s);
-		        			}
-		        		}
-		        	}
 		      //  	System.out.println(r.get("res").toString());
 		     //		System.out.println("RES:" + resources.toString());
 
-		        	this.worked++;
+		        	
+		        	try {
 		            doWork(message);
+		        	}
+		        	catch (InterruptedException e){
+		                Thread.currentThread().interrupt();
+		        	}
 		        } finally {
 		            System.out.println(id + "- [x] Done");
 		            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+		          //  tasks_accepted.add((String)jo.get("type"));
+		            this.worked++;
 		            WorkFleet.incTotal();
 		        }
 	        }
@@ -75,8 +76,8 @@ public class Worker {
 	        	
 	        	//Reschedule Task
 	        	
-	        	//Add Task ID to tasks_seen array
-	        	tasks_seen.add(jo.get("id").toString());
+	        	//Add Task ID to tasks_rejected array
+	        	tasks_rejected.add(jo.get("id").toString());
 	        	
 	        	//Increment Reschedule Amount
 	        	jo.put("rescheduled_amount", (Integer)jo.get("rescheduled_amount")+1);
@@ -99,23 +100,28 @@ public class Worker {
 	    channel.basicConsume(TASK_QUEUE_NAME, false, deliverCallback, consumerTag -> { });
 	  }
 
-	  private static void doWork(String task) {
+	  private void doWork(String task) throws InterruptedException{
 		
 		  //Acquire resources task requires
 		  //Incur sleep for each resource to acquire
 		  //Sleep depending on task type
 		  
-		  
-	/*    for (char ch : task.toCharArray()) {
-	        if (ch == '.') {
-	            try {
-	                Thread.sleep(1000);
-	            } catch (InterruptedException _ignored) {
-	                Thread.currentThread().interrupt();
-	            }
-	        }
-	    }
-	    */
+      	//Acquire Resources
+      	
+      //	JSONObject r = new JSONObject();
+      	r.put("res", jo.get("resources"));
+      	String RString = new String(r.get("res").toString());
+      	for (String s : RString.split("\"")) {
+      		if(s.charAt(0) == 'r') {
+      			if(!resources.contains(s)) {
+      					resources.add(s);
+      					Thread.sleep(1000); //Sleep while acquiring resources
+      			}
+      		}
+      	}
+      	
+      	Thread.sleep(250);	//Sleep to process task
+
 	  }
 	  
 	  public String toString() {
@@ -126,8 +132,13 @@ public class Worker {
 		  
 		  //Logic for whether to accept task
 		  
-		  if(tasks_seen.contains(jo.get("id").toString())){
-			  //If we have seen Task before, accept it
+		  if(this.policy == 'b') {
+			  //if Baseline policy, workers must accept all tasks
+			  return true;
+		  }
+		  
+		  if(tasks_rejected.contains(jo.get("id").toString())){
+			  //If we have rejected the Task before, accept it
 			  return true;
 		  }
 

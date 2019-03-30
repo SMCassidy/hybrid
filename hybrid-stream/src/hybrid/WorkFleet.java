@@ -26,7 +26,7 @@ public class WorkFleet {
 		*/		
 		
 		for(int i=0;i<work_num;i++) {
-			workers.add(new Worker(i+1));
+			workers.add(new Worker(i+1, 'r'));
 		}
 		
 		try {
@@ -44,7 +44,7 @@ public class WorkFleet {
 		if(total_worked==1) {
 			startTime = System.nanoTime();
 		}
-		if(total_worked==100) {
+		if(total_worked==20) {
 			//System.out.println("total_worked=" + total_worked);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("FINAL TIME: " + String.valueOf(elapsedTime/ 1_000_000_000.0) + "s");

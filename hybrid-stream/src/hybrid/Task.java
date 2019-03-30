@@ -20,8 +20,8 @@ public class Task {
 	  String m;
 
 	  
-	  public Task(String type) {
-		  this.type = type;
+	  public Task() {
+		  this.type = "A";
 	  }
 	  
 	  public void send() throws Exception {
@@ -31,7 +31,7 @@ public class Task {
 	         Channel channel = connection.createChannel()) {
 	        channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
 	        
-	        buildMessage();
+	       // buildMessage();
 	        m = obj.toString();
 
 	      //  String message = String.join(" ", msg);
@@ -69,12 +69,35 @@ public class Task {
 			  //Check we're not adding the same resource twice
 			  if(!copy.contains(l)) {
 			  res.put("r".concat(l.toString()));
-			  }
 			  copy.add(l);
+			  }
+			  
 		  }
 		  
 		  obj.put("resources",res);
 
+	  }
+	  
+	  public void setTask(String[] setup) {
+		  obj = new JSONObject();
+		  obj.put("id", TaskFleet.stampID());
+		  obj.put("rescheduled_amount", 0);	
+		  JSONArray res = new JSONArray();
+		  JSONArray w_r = new JSONArray();
+	
+		  for(int i=0;i<setup.length;i++) {
+				if(i==0) {
+	//				System.out.println("TYPE:" + setup[i]);
+					obj.put("type", setup[i]);
+				}
+				else {
+//					System.out.println("RES:" + setup[i]);
+					res.put(setup[i]);
+				}
+		  }
+		  
+		  obj.put("workers_rescheduled", w_r);
+		  obj.put("resources",res);
 	  }
 	  
 	  public void setMessage(String s) {
