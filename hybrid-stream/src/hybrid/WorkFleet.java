@@ -26,7 +26,7 @@ public class WorkFleet {
 		*/		
 		
 		for(int i=0;i<work_num;i++) {
-			workers.add(new Worker(i+1, 'r'));
+			workers.add(new Worker(i+1, 'b'));
 		}
 		
 		try {
@@ -38,13 +38,19 @@ public class WorkFleet {
 		}
 	}
 	
+	public static synchronized void prefChange(int id, String pref) {
+		for (int i=0;i<work_num;i++) {
+			workers.get(i).updatePrefs(id, pref);
+		}
+	}
+	
 	public static synchronized void incTotal() {
 		total_worked++;
 		System.out.println("Total="+total_worked);
 		if(total_worked==1) {
 			startTime = System.nanoTime();
 		}
-		if(total_worked==20) {
+		if(total_worked==40) {
 			//System.out.println("total_worked=" + total_worked);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("FINAL TIME: " + String.valueOf(elapsedTime/ 1_000_000_000.0) + "s");

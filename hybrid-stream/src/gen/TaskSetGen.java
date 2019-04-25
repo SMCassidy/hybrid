@@ -24,7 +24,7 @@ public class TaskSetGen {
 	try {
 		    FileWriter fileWriter = new FileWriter("task_set.txt");
 		    PrintWriter printWriter = new PrintWriter(fileWriter);
-		    for(int j=0;j<20;j++) {
+		    for(int j=0;j<40;j++) {
 		    c = ThreadLocalRandom.current().nextInt(0,3);
 		    printWriter.print(types.get(c)+",");
 			copy = new ArrayList<Integer>(); 
