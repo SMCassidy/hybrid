@@ -37,7 +37,7 @@ public class TaskFleet {
 	//		taskB.send();
 	//		taskC.send();
 			//task.setMessage(task.getMessage().concat("-"));
-			//Thread.sleep(500);
+			//Thread.sleep(1000);
 	//	}
 		
 	}

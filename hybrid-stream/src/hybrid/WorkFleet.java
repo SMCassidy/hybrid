@@ -1,7 +1,9 @@
 package hybrid;
 
 import hybrid.Worker;
-
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class WorkFleet {
@@ -10,23 +12,18 @@ public class WorkFleet {
 	private static long elapsedTime;
 	private static ArrayList<Worker> workers;
 	private static int work_num=4;
+	private static int total_rescheduled=0;
+	private static int hits=0;
+	private static int worked_goal=40;
+	private static char policy='M';
 
 	public static void main(String[] argv) {
+		
 		System.out.println("Initialising Workfleet...");
-	//	Integer n = Integer.parseInt(argv[0]);
 		workers = new ArrayList<Worker>();
-	//	System.out.println("n: " + n.toString());
-
-/*		Worker worker1 = new Worker(1);
-		try {
-			worker1.listen();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		*/		
 		
 		for(int i=0;i<work_num;i++) {
-			workers.add(new Worker(i+1, 'b'));
+			workers.add(new Worker(i+1, policy));
 		}
 		
 		try {
@@ -44,19 +41,43 @@ public class WorkFleet {
 		}
 	}
 	
-	public static synchronized void incTotal() {
+	public static synchronized void incTotalRescheduled(int k) {
+		total_rescheduled += k;
+	}
+	
+	public static synchronized void incHits() {
+		hits++;
+	}
+	
+	public static synchronized void incTotalWorked() {
 		total_worked++;
 		System.out.println("Total="+total_worked);
 		if(total_worked==1) {
 			startTime = System.nanoTime();
 		}
-		if(total_worked==40) {
+		if(total_worked==worked_goal) {
 			//System.out.println("total_worked=" + total_worked);
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("FINAL TIME: " + String.valueOf(elapsedTime/ 1_000_000_000.0) + "s");
+			try {
+			FileWriter fileWriter = new FileWriter("results.txt", true);
+			PrintWriter printWriter = new PrintWriter(fileWriter);
+		//	fileWriter.write("workers: " + work_num + "\n");
+		//	fileWriter.write("time:"+String.valueOf(elapsedTime/ 1_000_000_000.0) + "s"+", hits:"+hits+", resch:"+total_rescheduled);
+			printWriter.println("workers: " + work_num + " policy: " + policy + " goal: " + worked_goal);
+			printWriter.println("time:"+String.valueOf(elapsedTime/ 1_000_000_000.0) + "s"+", hits:"+hits+", resch:"+total_rescheduled);
+			/*System.out.println("FINAL TIME: " + String.valueOf(elapsedTime/ 1_000_000_000.0) + "s");
+			System.out.println("HITS: " + hits);
+			System.out.println("TASKS RESCHEDULED: " + total_rescheduled + " times");
 			for(Worker w: workers) {
 				System.out.println(w.toString());
 			}
+			*/
+			printWriter.close();
+			}
+			catch(IOException e) {
+				
+			}
+			System.out.println("Exiting..");
 			System.exit(0);
 		}
 	}

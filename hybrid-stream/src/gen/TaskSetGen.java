@@ -12,6 +12,7 @@ public class TaskSetGen {
 	static ArrayList<Integer> copy;
 	static Integer c;
 	static Integer r;
+	static Integer d;
 	
 
 	public static void main(String[] argv) throws IOException {
@@ -20,17 +21,22 @@ public class TaskSetGen {
 		types.add('A');
 		types.add('B');
 		types.add('C');
-		
+		types.add('D');
+	//	types.add('E');
+	//	types.add('F');
+	//	types.add('G');
+	//	types.add('H');		
 	try {
 		    FileWriter fileWriter = new FileWriter("task_set.txt");
 		    PrintWriter printWriter = new PrintWriter(fileWriter);
 		    for(int j=0;j<40;j++) {
-		    c = ThreadLocalRandom.current().nextInt(0,3);
+		    c = ThreadLocalRandom.current().nextInt(0,4);		//how many task types
 		    printWriter.print(types.get(c)+",");
 			copy = new ArrayList<Integer>(); 
-		    c = ThreadLocalRandom.current().nextInt(0, 3 + 1);
-		    for(int i=0;i<c;i++) {
-		    	r = ThreadLocalRandom.current().nextInt(1,11);
+			printWriter.print("r" + c.toString()+",");			//Every A has an r1, every B an r2 etc.
+		    d = ThreadLocalRandom.current().nextInt(0, 4 + 1);	//how many resources get assigned to task
+		    for(int i=0;i<d;i++) {
+		    	r = ThreadLocalRandom.current().nextInt(1,11);	//how many possible resources exist, (1,11) = ten resources
 				  if(!copy.contains(r)) {
 					  printWriter.print("r" + r.toString()+",");
 					  copy.add(r);
